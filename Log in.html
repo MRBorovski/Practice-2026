@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Реєстрація — THE LAST FALL</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Oswald', sans-serif;
+  background: black;
+  color: white;
+  overflow: hidden;
+}
+
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -20px; 
+  background: url("IMG/banner.png") center/cover no-repeat;
+  filter: blur(12px);
+  transform: scale(1.05);
+  z-index: 0;
+}
+
+/* Затемнение */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.3) 0%,
+    rgba(0,0,0,0.7) 60%,
+    rgba(0,0,0,0.95) 100%
+  );
+  z-index: 1;
+}
+
+.background-logo {
+  position: absolute;
+  top: 60%; /* немного ниже центра */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  opacity: 0.06; /* очень лёгкий фон */
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 0 20px rgba(255,0,0,0.3));
+}
+
+
+.register-box {
+  position: relative;
+  z-index: 3;
+  width: 420px;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 50px rgba(255,0,0,0.15);
+  text-align: center;
+}
+
+.register-box h1 {
+  margin-bottom: 30px;
+  font-size: 2rem;
+  letter-spacing: 2px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  background: black;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-family: inherit;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.register-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: #FE2B2B;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: 0.3s;
+}
+
+.register-btn:hover {
+  background: #c91f1f;
+  box-shadow: 0 0 15px rgba(255,0,0,0.5);
+}
+
+.login-link {
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.login-link a {
+  color: #FFD700;
+  text-decoration: none;
+}
+
+#fireCanvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <canvas id="fireCanvas"></canvas>
+
+  <img src="IMG/Logo_square.png" class="background-logo" alt="Logo">
+
+  <div class="register-box">
+    <h1>СТВОРИТИ АКАУНТ</h1>
+
+    <form>
+      <div class="form-group">
+        <label>Ім’я користувача</label>
+        <input type="text" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" required>
+      </div>
+
+      <div class="form-group">
+        <label>Підтвердити пароль</label>
+        <input type="password" required>
+      </div>
+
+      <button class="register-btn">ЗАРЕЄСТРУВАТИСЯ</button>
+    </form>
+
+    <div class="login-link">
+      Вже маєте акаунт? <a href="#">Увійти</a>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  const canvas = document.getElementById("fireCanvas");
+  const hero = document.querySelector(".hero");
+  if (!canvas || !hero) return;
+
+  const ctx = canvas.getContext("2d");
+  let sparks = [];
+  let animationId = null;
+
+  const WIND = 3.0;
+  const SPAWN_RATE = 0.08;
+  const MAX_SPARKS = 50;
+
+  function resize() {
+    canvas.width = hero.offsetWidth;
+    canvas.height = hero.offsetHeight;
+  }
+
+  function createSpark() {
+    const length = Math.random() * 70 + 30;
+    const width = Math.random() * 6 + 2;
+
+    return {
+      x: Math.random() * canvas.width * 0.5,
+      y: canvas.height + 30,
+      length,
+      width,
+      speedX: WIND + (Math.random() - 0.5) * 2.0,
+      speedY: Math.random() * 5 + 3.5,
+      alpha: 1,
+      fade: Math.random() * 0.004 + 0.002,
+      swirl: Math.random() * 0.03 + 0.01,
+      swirlOffset: Math.random() * Math.PI * 2,
+      shape: Math.random() * 0.6 + 0.7
+    };
+  }
+
+  function drawSpark(s) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    const angle = Math.atan2(-s.speedY, s.speedX);
+    ctx.translate(s.x, s.y);
+    ctx.rotate(angle);
+
+    const tailLength = s.length * s.shape;
+
+    const gradient = ctx.createLinearGradient(-tailLength, 0, 0, 0);
+    gradient.addColorStop(0, `rgba(255,0,0,0)`);
+    gradient.addColorStop(0.5, `rgba(255,120,40,${s.alpha * 0.6})`);
+    gradient.addColorStop(0.8, `rgba(255,200,80,${s.alpha * 0.9})`);
+    gradient.addColorStop(1, `rgba(255,255,200,${s.alpha})`);
+
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -s.width * 0.3);
+    ctx.lineTo(0, s.width * 0.3);
+    ctx.lineTo(-tailLength, s.width * 0.15);
+    ctx.lineTo(-tailLength, -s.width * 0.15);
+    ctx.closePath();
+    ctx.fill();
+
+    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, s.width * 5);
+    glow.addColorStop(0, `rgba(255,180,80,${s.alpha * 0.3})`);
+    glow.addColorStop(1, `rgba(255,0,0,0)`);
+
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, s.width * 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (Math.random() < SPAWN_RATE && sparks.length < MAX_SPARKS) {
+      sparks.push(createSpark());
+    }
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+
+      s.x += s.speedX + Math.sin(s.y * 0.02 + s.swirlOffset) * s.swirl * 20;
+      s.y -= s.speedY;
+
+      s.alpha -= s.fade;
+
+      drawSpark(s);
+
+      if (
+        s.alpha <= 0 ||
+        s.y < -400 ||
+        s.x < -400 ||
+        s.x > canvas.width + 400
+      ) {
+        sparks.splice(i, 1);
+      }
+    }
+
+    animationId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+  update();
+})();
+</script>
+
+</body>
+</html>

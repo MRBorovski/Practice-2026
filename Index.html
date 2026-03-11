@@ -1,0 +1,1175 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Сайт с баннером</title>
+  <!-- Подключаем шрифт Oswald -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Прогрессбар внутри topbar */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #FE2B2B;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  transform: translateY(-100%);
+  transition: transform 0.8s ease;
+  z-index: 20;
+  overflow: visible;
+}
+
+/* Контейнер прогресса (в верху topbar) */
+.topbar .progress-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 8px; /* товщина полоски */
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 30;
+}
+
+/* Собственно полоска */
+.topbar .progress {
+  height: 100%;
+  width: 0%;
+  background:
+    linear-gradient(90deg, rgba(255,215,0,0.95), rgba(255,255,255,0.15)) ; /* типо градиент */
+  transition: width 120ms linear;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.25) inset;
+  mix-blend-mode: normal;
+}
+
+/* Наложение шума для "грязи" (использует SVG filter ниже) и помоему не работает */
+.topbar .progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  mix-blend-mode: multiply;
+  filter: url(#grain); /* SVG фильтр */
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Царапины и потертости через повторяющийся градиент */
+.topbar .progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient( -20deg,
+      rgba(255,255,255,0.06) 0 1px,
+      rgba(0,0,0,0.06) 1px 3px
+    ),
+    linear-gradient( to right, rgba(255,255,255,0.06), rgba(255,255,255,0) );
+  opacity: 0.85;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Дополнительный эффект выцветания по мере заполнения: чем больше заполнено, тем сильнее видна потертость */
+.topbar .progress.worn::before {
+  opacity: 1;
+  background: rgba(0,0,0,0.22);
+}
+.topbar .progress.worn::after {
+  opacity: 1;
+  transform: translateX(-6px) rotate(-1deg);
+}
+
+/* не рабочая анимация царапин при заполнении */
+.topbar .progress.animate-scratches::after {
+  animation: scratches 1.2s linear infinite;
+}
+@keyframes scratches {
+  0% { transform: translateX(-2px) rotate(-0.5deg); opacity: 0.9; }
+  50% { transform: translateX(0px) rotate(0.5deg); opacity: 1; }
+  100% { transform: translateX(-2px) rotate(-0.5deg); opacity: 0.9; }
+}
+
+/* Адаптация для маленьких экранов */
+@media (max-width: 600px) {
+  .topbar .progress-wrap { height: 6px; }
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* логотип слева, ссылки справа */
+  padding: 0 20px;
+  height: 60px;
+  background-color: #FE2B2B;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 20;
+}
+
+/* Логотип */
+.topbar-logo img {
+  height: 40px;          /* высота логотипа */
+  border: 2px solid black; /* черная рамка 2px */
+  border-radius: 4px;    /* слегка скругленные углы */
+}
+
+/* Контейнер для ссылок */
+.topbar-links {
+  display: flex;
+  gap: 180px; /* расстояние между ссылками */
+}
+
+.topbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.2em;
+  transition: color 0.3s;
+}
+
+.topbar-links a:hover {
+  color: #FFD700;
+}
+
+.scroll-hint {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.scroll-hint:hover {
+  background: rgba(255,255,255,0.85);
+}
+
+.topbar-logo a {
+  display: inline-block;
+}
+
+.topbar-logo a:focus {
+  outline: none;
+}
+.site-footer {
+  background: #000;
+  padding: 80px 5% 60px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 60px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.footer-col {
+  min-width: 220px;
+  color: white;
+}
+
+.footer-col h4 {
+  margin-bottom: 20px;
+  font-size: 1.1em;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col ul li {
+  margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+  color: white;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: 0.3s;
+}
+
+.footer-col ul li a:hover {
+  opacity: 1;
+  color: #FFD700;
+}
+
+/* Лого */
+.footer-logo h2 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.footer-logo .est {
+  display: block;
+  margin-bottom: 25px;
+  letter-spacing: 2px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.footer-copy {
+  margin-bottom: 15px;
+  opacity: 0.6;
+  font-size: 0.9rem;
+}
+
+.mobile-version {
+  opacity: 0.8;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.mobile-version:hover {
+  color: #FFD700;
+}
+
+/* Контакты */
+.contact-item {
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.socials {
+  margin-top: 20px;
+}
+
+.social-icons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.social-icons a {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: 0.3s;
+}
+
+.social-icons a:hover {
+  color: #FFD700;
+  opacity: 1;
+}
+
+/* Адаптив */
+@media (max-width: 900px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+}
+</style>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Oswald', sans-serif;
+      overflow-x: hidden;
+      background-color: black;
+      color: white;
+    }
+
+    a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    a:hover {
+      color: #FFD700;
+    }
+
+    .banner {
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transition: transform 1s ease;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    .banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2em;
+      color: black;
+      background: rgba(255,255,255,0.6);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+/* Позиционирование текста чуть ниже центра баннера */
+.banner-text {
+  position: absolute;
+  left: 50%;
+  top: 55%; /* чуть ниже центра */
+  transform: translateX(-50%);
+  z-index: 11; /* выше изображения и чуть выше scroll-hint */
+  text-align: center;
+  color: white;
+  width: 90%;
+  max-width: 900px;
+  pointer-events: none; /* чтобы не мешать кликам по баннеру */
+}
+
+/* Стили для заголовка и подписи внутри баннера */
+.banner-text h1 {
+  margin: 0 0 6px 0;
+  font-size: clamp(1.6rem, 3.5vw, 3rem);
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  pointer-events: auto;
+}
+
+.banner-text p {
+  margin: 0;
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  line-height: 1.2;
+  background: rgba(0,0,0,0.35);
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  pointer-events: auto;
+}
+
+/* Убедимся, что подсказка прокрутки остаётся внизу и под текстом */
+.scroll-hint {
+  z-index: 9;
+}
+
+/* Мобильная адаптация: чуть выше по вертикали и уменьшение отступов */
+@media (max-width: 600px) {
+  .banner-text { top: 52%; width: 94%; }
+  .banner-text h1 { font-size: 1.6rem; }
+  .banner-text p { font-size: 1rem; padding: 5px 8px; }
+}
+
+    .scroll-hint .arrow {
+      font-size: 1.2em;
+      color: black;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #FE2B2B;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      transform: translateY(-100%);
+      transition: transform 0.8s ease;
+      z-index: 20;
+    }
+
+    .topbar a {
+      text-decoration: none;
+      color: white;
+      font-size: 1.2em;
+      transition: color 0.3s;
+    }
+
+    .topbar a:hover {
+      color: #FFD700;
+    }
+
+    .banner.hidden {
+  transform: translateY(calc(-100% + 60px));
+}
+
+    .topbar.visible {
+      transform: translateY(0);
+    }
+
+    /* Одиночная секция контента */
+    .content-section {
+      height: 66.666vh; /* 2/3 высоты экрана */
+      min-height: 400px; /* запас для маленьких экранов */
+      display: flex;
+      align-items: center;
+      padding: 0 5%;
+      box-sizing: border-box;
+      gap: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Внутренний блок с текстом/контентом */
+    .content-inner {
+      width: 60%;
+      max-width: 900px;
+      background: rgba(255,255,255,0.03);
+      padding: 30px;
+      border-radius: 8px;
+      color: white;
+      font-size: 1.6em;
+      line-height: 1.2;
+    }
+
+    /* Чередование выравнивания */
+    .content-section.left {
+      justify-content: flex-start;
+    }
+
+    .content-section.left .content-inner {
+      margin-left: 0;
+      text-align: left;
+    }
+
+    .content-section.right {
+      justify-content: flex-end;
+    }
+
+    .content-section.right .content-inner {
+      margin-right: 0;
+      text-align: right;
+    }
+
+    /* Визуальные отличия секций */
+    .content-section.alt {
+      background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+    }
+
+    /* Адаптив */
+    @media (max-width: 900px) {
+      .content-inner {
+        width: 100%;
+        font-size: 1.2em;
+        padding: 20px;
+      }
+      .content-section {
+        justify-content: center;
+      }
+      .content-section.right .content-inner,
+      .content-section.left .content-inner {
+        text-align: center;
+      }
+    }
+.block1 {
+  position: relative;
+  overflow: hidden;
+  background: black;
+  margin-top: 320px; /* регулируй величину, чем больше — тем ниже блок */
+}
+
+.block1::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("IMG/map_block1.png") center/cover no-repeat;
+  z-index: 0;
+}
+
+/* Градиент плавного перехода в фон */
+.block1::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 40%,
+    rgba(0,0,0,0.6) 70%,
+    rgba(0,0,0,1) 100%
+  );
+  z-index: 1;
+}
+
+/* Контент поверх */
+.block1 .content-inner {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+/* Небольшой эффект мягкого свечения текста */
+.block1-text {
+  backdrop-filter: blur(3px);
+  background: rgba(0,0,0,0.4);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.banner-splash {
+  position: absolute;
+  top: 65%;           /* 65% от верха баннера */
+  left: 50%;
+  transform: translate(-50%,150px); /* только горизонтально центрируем */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 80%;
+  text-align: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.banner-splash h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  margin: 0;
+  pointer-events: auto;
+}
+
+.banner-splash span {
+  font-size: 2em;
+  color: white;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: splashAppear 1s forwards;
+}
+
+@keyframes splashAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.block2 {
+  position: relative;
+  overflow: hidden;
+}
+
+.block2-image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 25%;
+  background: url("IMG/Block2_img.png") left center / cover no-repeat;
+  z-index: 0;
+}
+
+.block2-image::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  height: 100%;
+  width: 150px;
+
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.4) 50%,
+    rgba(0,0,0,0.8) 80%,
+    rgba(0,0,0,1) 100%
+  );
+}
+
+.block2 .content-inner {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+
+  .block2-image {
+    position: relative;
+    width: 100%;
+    height: 250px;
+  }
+
+  .block2-image::after {
+    display: none;
+  }
+
+  .block2 {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+#fireCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12; /* выше картинки, ниже текста */
+}
+
+.banner.hidden #fireCanvas {
+  display: none;
+}
+.block3 {
+  position: relative;
+  overflow: hidden;
+  background: black;
+}
+
+.block3::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("IMG/Block_3_img.png") center/cover no-repeat;
+  z-index: 0;
+}
+
+.block3::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 40%,
+    rgba(0,0,0,0.6) 70%,
+    rgba(0,0,0,1) 100%
+  );
+  z-index: 1;
+}
+
+.block3 .content-inner {
+  position: relative;
+  z-index: 2;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(3px);
+}
+.block4 {
+  position: relative;
+  overflow: hidden;
+}
+
+.block4-image {
+  position: absolute;
+  left: 0; 
+  top: 0;
+  height: 100%;
+  width: 65%;
+  background: url("IMG/Block_4_img.png") left center / cover no-repeat;
+  z-index: 0;
+}
+
+.block4-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  height: 100%;
+  width: 150px;
+
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.4) 50%,
+    rgba(0,0,0,0.8) 80%,
+    rgba(0,0,0,1) 100%
+  );
+}
+
+.block4 .content-inner {
+  position: relative;
+  z-index: 2;
+}
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <canvas id="fireCanvas"></canvas>
+    <img src="IMG/banner.png" alt="Баннер">
+   <div class="banner-text" role="region" aria-label="Banner text">
+    <div class="banner-splash" id="banner-splash">
+  <h1 id="banner-splash-text"></h1>
+</div>
+</div>
+
+    	<button class="scroll-hint" id="scrollMore" type="button">
+  <span class="arrow">⬇</span>
+  <span class="text">Дізнатися більше</span>
+  <span class="arrow">⬇</span>
+	</button>
+  </div>
+
+  <div class="topbar">
+  <!-- Логотип слева -->
+ <div class="topbar-logo">
+  <a href="index.html">
+    <img src="IMG/Logo_square.png" alt="Логотип">
+  </a>
+</div>
+
+  <!-- Ссылки справа -->
+  <div class="topbar-links">
+    <a href="#">Новини</a>
+    <a href="#">Вікі</a>
+    <a href="#">Наші продукти</a>
+    <a href="#">Допомога</a>
+    <a href="Log in.html">Увійти в аккаунт</a>
+  </div>
+
+  <!-- Прогресс полоска (можно оставить как есть) -->
+  <div class="progress-wrap" aria-hidden="true">
+    <div class="progress" id="topProgress"></div>
+  </div>
+
+  <!-- SVG фильтр для шума -->
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="grain">
+      <feTurbulence baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" type="fractalNoise" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.25"/>
+      </feComponentTransfer>
+      <feBlend mode="multiply"/>
+    </filter>
+  </svg>
+</div>
+
+ <section class="content-section left block1">
+  <div class="content-inner">
+    <div class="block1-text">
+      <strong>Досліджуй світ</strong><br>
+      Величезний світ, що розриває себе з середини нескінченною війною, чекає істот здатних у будь-який спосіб завершити кровопролиття, навіть якщо доведется знищити світ.
+    </div>
+  </div>
+</section>
+
+    <section class="content-section right alt block2">
+  <div class="block2-image"></div>
+  <div class="content-inner">
+        <strong>Стань видатною особистістю</strong><br>
+        Світ сповнений, відомими воїнами, незламними жрецями, стійкими варварами, харизматичними бардрами та всесильними чаклунами. Чи змиожете ви посісти місце серед них?
+      </div>
+    </section>
+
+<section class="content-section left block3">
+  <div class="content-inner">
+    <strong>Іноввації не чікають</strong><br>
+    Досліджуй нові технології та стань двигуном прогрессу у світі, що стоїть на порозі промислової революції
+  </div>
+</section>
+
+<section class="content-section right alt block4">
+  <div class="block4-image"></div>
+  <div class="content-inner">
+    <strong>Заснуй власну фортецю</strong><br>
+    Створи свій власний затишний куточок, та захищай його від загарбників
+  </div>
+</section>
+   <script>
+(() => {
+  const banner = document.querySelector('.banner');
+  const topbar = document.querySelector('.topbar');
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  function showBanner() {
+    banner.classList.remove('hidden');
+    topbar.classList.remove('visible');
+  }
+
+  function hideBanner() {
+    banner.classList.add('hidden');
+    topbar.classList.add('visible');
+  }
+
+  function onScroll() {
+    const currentY = window.scrollY;
+
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+
+        // В самом верху страницы — всегда показываем баннер
+        if (currentY <= 5) {
+          showBanner();
+        }
+
+        // Скролл вниз — скрываем баннер
+        else if (currentY > lastScrollY && currentY > 100) {
+          hideBanner();
+        }
+
+        // Скролл вверх — показываем баннер
+        else if (currentY < lastScrollY && currentY < window.innerHeight * 0.4) {
+          showBanner();
+        }
+
+        lastScrollY = currentY;
+        ticking = false;
+
+      });
+
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Начальное состояние при загрузке
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.scrollY > 100) {
+      hideBanner();
+    } else {
+      showBanner();
+    }
+  });
+
+})();
+</script>
+<script>
+(function() {
+  const btn = document.getElementById('scrollMore');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const targetScroll = window.innerHeight * 0.3;
+
+    window.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    });
+  });
+})();
+</script>
+<script>
+(function() {
+  const progress = document.getElementById('topProgress');
+  const doc = document.documentElement;
+  const body = document.body;
+
+  function updateProgress() {
+    const scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
+    const scrollHeight = Math.max(doc.scrollHeight, body.scrollHeight) - window.innerHeight;
+    const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    const clamped = Math.min(100, Math.max(0, pct));
+    progress.style.width = clamped + '%';
+
+    // Добавляем класс "worn" и анимацию царапин по мере заполнения
+    if (clamped > 6) progress.classList.add('animate-scratches');
+    else progress.classList.remove('animate-scratches');
+
+    // Чем больше заполнение, тем сильнее потертость
+    if (clamped > 30) progress.classList.add('worn');
+    else progress.classList.remove('worn');
+
+    // Немного варьируем яркость/градиент в зависимости от процента
+    const lightness = 95 - Math.round(clamped * 0.35); // 95..60
+    progress.style.background = `linear-gradient(90deg, rgba(255,215,0,0.95), rgba(255,255,255,0.${Math.max(8, Math.round(12 - clamped/10))}))`;
+  }
+
+  // Обновляем при загрузке и прокрутке
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  document.addEventListener('DOMContentLoaded', updateProgress);
+  updateProgress();
+})();
+</script>
+<script>
+(function() {
+  const splashEl = document.getElementById('banner-splash');
+  if (!splashEl) return;
+
+  // Параметры
+  const SPLASH_PATHS = [
+    '/splashes.json', // пробуем JSON первым
+    '/splashes.txt'   // затем текстовый файл
+  ];
+  const CACHE_BUST = true; // поставить false если не нужно добавлять ?v=timestamp (фигня убрать)
+
+  // Парсер для текстового формата (splashes.txt)
+  function parseTxt(text) {
+    return text
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  // Выбрать случайный элемент из массива
+  function pickRandom(arr) {
+    if (!arr || arr.length === 0) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Фолбэк на случай ошибки (можно изменить)
+  const FALLBACK = [
+    'We all gonna die alone',
+    'A nation which forget their past have no future',
+    'Good must come with fists',
+    'Blood and sweat',
+    'History favors the brave',
+    'Make it your own way',
+    'Since from 1984',
+    'Going postal',
+    'I regret nothing',
+    'I dont want to set the world on fire',
+    'I am hungry',
+    'Choice this is a privilege'
+  ];
+
+  // Попытка загрузить файл по списку путей
+  async function loadSplashes() {
+    for (const basePath of SPLASH_PATHS) {
+      try {
+        const url = CACHE_BUST ? `${basePath}?v=${Date.now()}` : basePath;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) continue;
+
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json') || basePath.endsWith('.json')) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length) return data;
+        } else {
+          const text = await res.text();
+          const arr = parseTxt(text);
+          if (arr.length) return arr;
+        }
+      } catch (e) {
+        // пропускаем и пробуем следующий путь
+      }
+    }
+    return FALLBACK;
+  }
+
+  
+  // Инициализация
+  document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const arr = await loadSplashes();           // загружаем массив сплешей
+    const chosen = pickRandom(arr) || pickRandom(FALLBACK); // выбираем случайный
+    const splashH1 = document.getElementById('banner-splash-text'); // находим h1
+    if (splashH1) splashH1.textContent = chosen;                 // вставляем текст
+  } catch (err) {
+    const splashH1 = document.getElementById('banner-splash-text');
+    if (splashH1) splashH1.textContent = pickRandom(FALLBACK);
+  }
+});
+
+})();
+</script>
+<script>
+(function() {
+  const canvas = document.getElementById("fireCanvas");
+  const banner = document.querySelector(".banner");
+  if (!canvas || !banner) return;
+
+  const ctx = canvas.getContext("2d");
+  let sparks = [];
+  let animationId = null;
+
+  const WIND = 3.0;          // смещение вправо
+  const SPAWN_RATE = 0.08;   // чуть больше частиц
+  const MAX_SPARKS = 50;     // увеличено количество
+
+  function resize() {
+    canvas.width = banner.offsetWidth;
+    canvas.height = banner.offsetHeight;
+  }
+
+  function createSpark() {
+    const length = Math.random() * 70 + 30;   //  длина искры
+    const width = Math.random() * 6 + 2;     //  ширина искры
+    return {
+      x: Math.random() * canvas.width * 0.5,
+      y: canvas.height + 30,
+      length,
+      width,
+      speedX: WIND + (Math.random() - 0.5) * 2.0, // немного разброс
+      speedY: Math.random() * 5 + 3.5,
+      alpha: 1,
+      fade: Math.random() * 0.004 + 0.002,
+      swirl: Math.random() * 0.03 + 0.01,
+      swirlOffset: Math.random() * Math.PI * 2,
+      shape: Math.random() * 0.6 + 0.7 // коэф. соотношения ядро/хвост
+    };
+  }
+
+  function drawSpark(s) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    // угол движения
+    const angle = Math.atan2(-s.speedY, s.speedX);
+    ctx.translate(s.x, s.y);
+    ctx.rotate(angle);
+
+    // вытянутый хвост исркы назад
+    const tailLength = s.length * s.shape;
+
+    const gradient = ctx.createLinearGradient(-tailLength, 0, 0, 0);
+    gradient.addColorStop(0, `rgba(255,0,0,0)`);          // хвост
+    gradient.addColorStop(0.5, `rgba(255,120,40,${s.alpha * 0.6})`);
+    gradient.addColorStop(0.8, `rgba(255,200,80,${s.alpha * 0.9})`);
+    gradient.addColorStop(1, `rgba(255,255,200,${s.alpha})`); // яркое ядро
+
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -s.width * 0.3);
+    ctx.lineTo(0, s.width * 0.3);
+    ctx.lineTo(-tailLength, s.width * 0.15);
+    ctx.lineTo(-tailLength, -s.width * 0.15);
+    ctx.closePath();
+    ctx.fill();
+
+    // световой ореол вокруг центра искры
+    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, s.width * 5);
+    glow.addColorStop(0, `rgba(255,180,80,${s.alpha * 0.3})`);
+    glow.addColorStop(1, `rgba(255,0,0,0)`);
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, s.width * 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (Math.random() < SPAWN_RATE && sparks.length < MAX_SPARKS) {
+      sparks.push(createSpark());
+    }
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+
+      // движение с вихрем
+      s.x += s.speedX + Math.sin(s.y * 0.02 + s.swirlOffset) * s.swirl * 20;
+      s.y -= s.speedY;
+
+      s.alpha -= s.fade;
+
+      drawSpark(s);
+
+      if (s.alpha <= 0 || s.y < -400 || s.x < -400 || s.x > canvas.width + 400) {
+        sparks.splice(i, 1);
+      }
+    }
+
+    animationId = requestAnimationFrame(update);
+  }
+
+  function start() {
+    if (!animationId) update();
+  }
+
+  function stop() {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sparks = [];
+  }
+
+  const observer = new MutationObserver(() => {
+    if (banner.classList.contains("hidden")) stop();
+    else start();
+  });
+
+  observer.observe(banner, { attributes: true });
+
+  window.addEventListener("resize", resize);
+  resize();
+  start();
+})();
+</script>
+<footer class="site-footer">
+  <div class="footer-container">
+
+    <!-- Лого -->
+    <div class="footer-col footer-logo">
+      <h2>THE LAST FALL</h2>
+      <span class="est">EST. 2026</span>
+
+      <div class="footer-copy">
+        All © 2009–2026
+      </div>
+
+      <div class="mobile-version">
+        📱 Мобільна версія
+      </div>
+    </div>
+
+    <!-- Каталог -->
+    <div class="footer-col">
+      <h4>Вікі</h4>
+      <ul>
+        <li><a href="#">Країни</a></li>
+        <li><a href="#">Міста</a></li>
+        <li><a href="#">Расси</a></li>
+        <li><a href="#">Зброя</a></li>
+        <li><a href="#">Квести</a></li>
+        <li><a href="#">Персонажі</a></li>
+        <li><a href="#">Вороги</a></li>
+      </ul>
+    </div>
+
+    <!-- Клієнтам -->
+    <div class="footer-col">
+      <h4>Для гравців</h4>
+      <ul>
+        <li><a href="#">Вхід до аккаунту</a></li>
+        <li><a href="#">Вікі</a></li>
+        <li><a href="#">Про нас</a></li>
+        <li><a href="#">Інші наші продукти</a></li>
+        <li><a href="#">Служба підтримки</a></li>
+        <li><a href="#">Контактна інформація</a></li>
+        <li><a href="#">Угода користувача</a></li>
+        <li><a href="#">Політика конфіденційності</a></li>
+      </ul>
+    </div>
+
+    <!-- Контакти -->
+    <div class="footer-col">
+      <h4>Контактна інформація</h4>
+
+      <div class="contact-item">
+        📞 +380 77 255 88 55
+      </div>
+
+      <div class="contact-item">
+        ✉ online@TheLastFall.ua
+      </div>
+
+      <div class="contact-item">
+        📍 Вознесенськ, Миколаївська обл. вул. Глібова, 45
+      </div>
+
+      <div class="socials">
+        <span>Ми в соцмережах</span>
+        <div class="social-icons">
+          <a href="#">Instagram</a>
+          <a href="#">TikTok</a>
+          <a href="#">Facebook</a>
+          <a href="#">YouTube</a>
+          <a href="#">Telegram</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+
